@@ -1,0 +1,74 @@
+{
+  "posts": [
+    {
+      "title": "React is fun but difficult and different",
+      "body": "진짜 ㄹㅇ 개신기하고 재밌는듯...?\n하지만 ㄹㅇ 불친절하지 그리고 뷰랑 다른듯...",
+      "createdAt": 1673361703216,
+      "id": 1,
+      "publish": true
+    },
+    {
+      "title": "recoils",
+      "body": "admin link test",
+      "publish": false,
+      "createdAt": 1673543868678,
+      "id": 4
+    },
+    {
+      "title": "pagination4",
+      "body": "pagination4",
+      "publish": false,
+      "createdAt": 1673683022583,
+      "id": 8
+    },
+    {
+      "title": "Redux? so easy",
+      "body": "라고할뻔",
+      "publish": false,
+      "createdAt": 1673700702193,
+      "id": 16
+    },
+    {
+      "title": "TITLE VALIDATE",
+      "body": "Body VALIDATE",
+      "publish": true,
+      "createdAt": 1673714540107,
+      "id": 17
+    },
+    {
+      "title": "custom hooks",
+      "body": "good!",
+      "publish": true,
+      "createdAt": 1673756762986,
+      "id": 19
+    },
+    {
+      "title": "b",
+      "body": "b",
+      "publish": false,
+      "createdAt": 1673762013608,
+      "id": 23
+    },
+    {
+      "title": "sdaf",
+      "body": "adsfsdaf",
+      "publish": true,
+      "createdAt": 1673762816580,
+      "id": 24
+    },
+    {
+      "title": "sdaf",
+      "body": "adsfsdaf",
+      "publish": true,
+      "createdAt": 1673763069791,
+      "id": 25
+    },
+    {
+      "title": "sdaf",
+      "body": "abcdefghijk",
+      "publish": true,
+      "createdAt": 1673763070283,
+      "id": 26
+    }
+  ]
+}
