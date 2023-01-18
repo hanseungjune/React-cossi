@@ -1,14 +1,9 @@
 {
   "posts": [
     {
-      "title": "db.json connection Test",
-      "body": "success",
+      "title": "Create post1",
+      "body": "Create post1",
       "id": 1
-    },
-    {
-      "title": "db command",
-      "body": "\"db\": \"json-server --watch db.json --port 3001\",\n",
-      "id": 2
     }
   ]
 }

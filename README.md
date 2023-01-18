@@ -632,4 +632,551 @@ const Card = ({post}) => {
 export default Card;
 ```
 
-## 현재 강의는 25강 입니다
+## Children 이라는 props도 있다
+
+```js
+//ListPage.js
+import axios from "axios";
+import { useState, useEffect } from "react";
+import Card from '../components/Card'
+
+const ListPage = () => {
+  const [posts, setPosts] = useState([]);
+
+  const getPosts = () => {
+    axios.get("http://localhost:3001/posts").then((res) => {
+      setPosts(res.data);
+    });
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
+
+  return (
+    <div>
+      <h1>Blogs</h1>
+      {posts.map((post) => {
+        return (
+          {/* 1. 먼저 컴포넌트를 바로 닫지 않고 2개로 열어둔다. */}
+          <Card key={post.id}>
+            {/* 여기 안에있는 태그 자체를 props로 넘겨주는게 children이다. */}
+            <div className="d-flex justify-content-between">
+              <div>{post.title}</div>
+              <div>buttons</div>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+};
+
+export default ListPage;
+```
+
+```js
+//Card.js
+const Card = ({children}) => {
+  return (
+    <div className="card mb-3">
+      <div className="card-body">
+        {/* children에 해당하는 props태그가 여기로 온다고 생각하면 된다. */}
+        {children}
+      </div>
+    </div>
+  );
+};
+
+export default Card;
+```
+
+> 만약에 children의 존재 여부를 따지려면 다음과 같이 하면 된다
+
+```js
+//Card.js
+const Card = ({children}) => {
+  return (
+    <div className="card mb-3">
+      <div className="card-body">
+        {/* children의 존재 여부 따지기*/}
+        {children && <div>{children}</div>}
+      </div>
+    </div>
+  );
+};
+
+export default Card;
+```
+
+> propTypes를 사용해서 props의 타입을 지정할수 있음
+> 만약에 props가 없다면 기본값 지정도 가능함
+
+```js
+// ListPage.js props가 없다면
+return (
+  <Card key={post.id} />
+);
+```
+
+```js
+import propTypes from 'prop-types'
+
+// Card.js 에는 다음과 같이하면 'Title'이 기본값으로 대체된다.
+Card.propTypes = {
+  title: propTypes.string,
+};
+
+Card.defaultProps = {
+  title: 'Title'
+};
+```
+
+> 기본적으로 props가 꼭 있어야 한다면 다음과 같이 한다
+
+```js
+//ListPage.js
+return (
+  <Card key={post.id} title={post.title}/>
+);
+```
+
+```js
+//Card.js
+Card.propTypes = {
+  title: propTypes.string.isRequired,
+};
+```
+
+## Link(react-router-dom)를 이용한 버튼 만들기
+
+```js
+// ListPage.js
+
+import { Link } from 'react-router-dom';
+
+<div className="d-flex justify-content-between">
+  <h1>Blogs</h1>
+  <div>
+    <Link to="/blogs/create" className="btn btn-success">
+      Create New
+    </Link>
+  </div>
+</div>
+```
+
+## useHistory로 페이지 이동하기
+
+> 컴포넌트 직접 이벤트 불가능, props로 함수를 넘겨주고 하위 컴포넌트에서 이벤트 발생시킴
+
+```js
+// ListPage.js
+import { Link, useHistory } from 'react-router-dom';
+
+<Card 
+  key={post.id} 
+  title={post.title}
+  {/* onClick라는 props를 다음과 같은 형태의 함수로 넘겨줌 */}
+  onClick={() => history.push('/blogs/edit')}
+/>
+```
+
+```js
+// Card.js
+
+import propTypes from 'prop-types'
+
+// () => history.push('/blogs/edit') onClick props 받아오고
+const Card = ({ title, onClick, children }) => {
+  return (
+    <div 
+      {/* 이벤트 = {props} */}
+      onClick={onClick} 
+      className="card mb-3 cursor-pointer" 
+    >
+      <div className="card-body">
+        <div className="d-flex justify-content-between">
+          <div>{title}</div>
+          {children && <div>{children}</div>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+Card.propTypes = {
+  title: propTypes.string.isRequired,
+  children: propTypes.element,
+  // props 타입 정하기
+  onClick: propTypes.func,
+};
+
+Card.defaultProps = {
+  children: null,
+  // props 기본값
+  onClick: () => {},
+}
+
+export default Card;
+
+```
+
+## 이벤트 버블링 방지하기
+
+```js
+// ListPage.js
+import axios from "axios";
+import { useState, useEffect } from "react";
+import Card from '../components/Card';
+import { Link, useHistory } from 'react-router-dom';
+
+const ListPage = () => {
+  const history = useHistory();
+  const [posts, setPosts] = useState([]);
+
+  const getPosts = () => {
+    axios.get("http://localhost:3001/posts").then((res) => {
+      setPosts(res.data);
+    });
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between">
+        <h1>Blogs</h1>
+        <div>
+          <Link to="/blogs/create" className="btn btn-success">
+            Create New
+          </Link>
+        </div>
+      </div>
+      {posts.map((post) => {
+        return (
+          <Card 
+            key={post.id} 
+            title={post.title}
+            onClick={() => history.push('/blogs/edit')}
+          >
+            <div>
+              <button 
+                className="btn btn-danger btn-sm"
+                onClick={(e) => {
+                  {/* 이벤트 버블링 방지하는 함수 */}
+                  e.stopPropagation();
+                  console.log("Event Bubbling Test")
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+};
+
+export default ListPage;
+```
+
+## DB 삭제 기능 구현(axios.delete())
+
+```js
+import axios from "axios";
+import { useState, useEffect } from "react";
+import Card from '../components/Card';
+import { Link, useHistory } from 'react-router-dom';
+
+const ListPage = () => {
+  const history = useHistory();
+  const [posts, setPosts] = useState([]);
+
+  const getPosts = () => {
+    axios.get("http://localhost:3001/posts").then((res) => {
+      setPosts(res.data);
+    });
+  };
+
+  // 2. 삭제 이벤트 함수
+  const deleteBlog = (e, id) => {
+    // 이벤트 버블링 방지
+    e.stopPropagation();
+    // delete 요청
+    axios.delete(`http://localhost:3001/posts/${id}`)
+    .then(() => {
+      // 기존에 있던 배열의 요소를 필터링하는데, 순회하는 요소의 id와 삭제한 요소의 id가 다를 경우로 새로운 배열을 생성한다.
+      // 그러면 삭제하자마자, 삭제한 요소가 DB -> 화면 순으로 제거가 된다.
+      setPosts(prevPosts => prevPosts.filter(post => post.id !== id))
+    });
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between">
+        <h1>Blogs</h1>
+        <div>
+          <Link to="/blogs/create" className="btn btn-success">
+            Create New
+          </Link>
+        </div>
+      </div>
+      {posts.map((post) => {
+        return (
+          <Card 
+            key={post.id} 
+            title={post.title}
+            onClick={() => history.push('/blogs/edit')}
+          >
+            <div>
+              <button 
+                className="btn btn-danger btn-sm"
+                {/* 1. 클릭하면 이벤트 함수가 바로 실행되는데, 특정 id를 받아와야하기 때문에 event와 id를 동시에 인자로 넣어준다. */}
+                onClick={(e) => deleteBlog(e, post.id)}
+              >
+                Delete
+              </button>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+};
+
+export default ListPage;
+
+```
+
+## 블로그에 게시물이 없으면 "No Blog post found" 라는 문구가 나오게하는 삼항연산자 작업
+
+```js
+//ListPage.js
+import axios from "axios";
+import { useState, useEffect } from "react";
+import Card from '../components/Card';
+import { Link, useHistory } from 'react-router-dom';
+
+const ListPage = () => {
+  const history = useHistory();
+  const [posts, setPosts] = useState([]);
+
+  const getPosts = () => {
+    axios.get("http://localhost:3001/posts").then((res) => {
+      setPosts(res.data);
+    });
+  };
+
+  const deleteBlog = (e, id) => {
+    e.stopPropagation();
+    axios.delete(`http://localhost:3001/posts/${id}`)
+    .then(() => {
+      setPosts(prevPosts => prevPosts.filter(post => post.id !== id))
+    });
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between">
+        <h1>Blogs</h1>
+        <div>
+          <Link to="/blogs/create" className="btn btn-success">
+            Create New
+          </Link>
+        </div>
+      </div>
+      {/* posts.length의 길이로 게시글의 존재여부를 파악한다. */}
+      {posts.length > 0 ? posts.map((post) => {
+        return (
+          <Card 
+            key={post.id} 
+            title={post.title}
+            onClick={() => history.push('/blogs/edit')}
+          >
+            <div>
+              <button 
+                className="btn btn-danger btn-sm"
+                onClick={(e) => deleteBlog(e, post.id)}
+              >
+                Delete
+              </button>
+            </div>
+          </Card>
+        );
+        {/* 없으면 다음과 같은 문구 나오게 하기 */}
+      }) : 'No blog posts found'}
+    </div>
+  );
+};
+
+export default ListPage;
+```
+
+## 화면을 제대로 나오게하기전에 loading 화면 나오게 하기
+
+```js
+//LoadingSpinner.js 일단 컴포넌트화 하기
+const LoadingSpinner = () => {
+  return (
+    <div className="text-center">
+      <button className="btn btn-primary" type="button" disabled>
+        <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          Loading...
+      </button>
+    </div>
+  )
+}
+
+export default LoadingSpinner;
+```
+
+```js
+// ListPage.js
+import axios from "axios";
+import { useState, useEffect } from "react";
+// 로딩스피너 컴포넌트 가져오기
+import LoadingSpinner from "../components/LoadingSpinner";
+
+const ListPage = () => {
+  const history = useHistory();
+  const [posts, setPosts] = useState([]);
+  // 일단 로딩은 기본 true
+  const [loading, setLoading] = useState(true);
+  const getPosts = () => {
+    axios.get("http://localhost:3001/posts").then((res) => {
+      setPosts(res.data);
+      // 데이터 성공적으로 받아오면 false 바꿔서 loading 없애기
+      setLoading(false);
+    });
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
+
+  // 렌더링 함수
+  const renderBlogList = () => {
+    // 로딩이 true일때 로딩스피너 리턴하기
+    if (loading) {
+      return (
+        <LoadingSpinner/>
+      )
+    }
+
+    // 게시물이 없으면 해당 문구 리턴하기
+    if (posts.length === 0) {
+      return (<div>No blog posts found</div>)
+    }
+    
+    // 위의 제약조건이 해소되면 게시글 리턴하기
+    return posts.map((post) => {
+      return (
+        <Card 
+          key={post.id} 
+          title={post.title}
+          onClick={() => history.push('/blogs/edit')}
+        >
+          <div>
+            <button 
+              className="btn btn-danger btn-sm"
+              onClick={(e) => deleteBlog(e, post.id)}
+            >
+              Delete
+            </button>
+          </div>
+        </Card>
+      );
+    });
+  }
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between">
+        <h1>Blogs</h1>
+        <div>
+          <Link to="/blogs/create" className="btn btn-success">
+            Create New
+          </Link>
+        </div>
+      </div>
+      {/* 함수를 실행하는 식으로 렌더링 */}
+      {renderBlogList()}
+    </div>
+  );
+};
+
+export default ListPage;
+```
+
+## 게시글 생성 후, 전체 게시글 조회 화면으로 이동하기
+
+```js
+//BlogForm.js
+
+import axios from "axios";
+import { useState } from "react";
+import { useHistory } from "react-router-dom";
+
+const BlogForm = () => {
+  // 특정 url로 이동하는 hook
+  const history = useHistory();
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const onSubmit = () => {
+    axios.post("http://localhost:3001/posts", {
+      title,
+      body,
+    // 생성 완료되면 다음 과정으로
+    }).then(() => {
+      // 이동
+      history.push('/blogs');
+    })
+  };
+  return (
+    <div className="container">
+      <h1>Create a blog post</h1>
+      <div className="mb-3">
+        <label className="form-label">Title</label>
+        <input
+          className="form-control"
+          value={title}
+          // onChange 이벤트는 입력되는 대로 함수 실행한다는 의미이다.
+          onChange={(event) => {
+            setTitle(event.target.value);
+          }}
+        />
+      </div>
+      <div className="mb-3">
+        <label className="form-label">Body</label>
+        <textarea
+          className="form-control"
+          value={body}
+          rows={10}
+          // onChange 이벤트는 입력되는 대로 함수 실행한다는 의미이다.
+          onChange={(event) => {
+            setBody(event.target.value);
+          }}
+        />
+      </div>
+      <button className="btn btn-primary" onClick={onSubmit}>
+        Post
+      </button>
+    </div>
+  );
+};
+
+export default BlogForm;
+```
+
+## 현재 강의는 34강 입니다
